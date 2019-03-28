@@ -1,7 +1,7 @@
 import tweepy
 from tweepy import OAuthHandler
 from tweepy import Stream
-from src.read_twitter import MyListener
+from read_twitter import MyListener
 
 class InitializeTwitterApi:
     def __init__(self):

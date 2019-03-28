@@ -1,8 +1,8 @@
-from src.mysql_connector import MySqlOperator
+from mysql_connector import MySqlOperator
 from collections import defaultdict
 
 import numpy as np
-from src.to_process_tweets import ProcessTweets
+from to_process_tweets import ProcessTweets
 import matplotlib.pyplot as pyplot
 
 class PostProcessTweets:

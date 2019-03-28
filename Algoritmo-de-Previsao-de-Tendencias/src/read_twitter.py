@@ -1,6 +1,6 @@
 import json
 from tweepy.streaming import StreamListener
-from src.mysql_connector import MySqlOperator
+from mysql_connector import MySqlOperator
 
 class MyListener(StreamListener):
     def __init__(self, term_to_search, limit):

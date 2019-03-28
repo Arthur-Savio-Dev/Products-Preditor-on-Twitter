@@ -2,8 +2,9 @@ import re
 import string
 from collections import Counter
 from textblob import TextBlob
-from src.mysql_connector import MySqlOperator
+from mysql_connector import MySqlOperator
 from collections import defaultdict
+from nltk.corpus import wordnet
 
 class ProcessTweets:
     def __init__(self):
@@ -45,21 +46,29 @@ class ProcessTweets:
             self.stop.append(f.readline().replace('\n', ''))
             while f.readline():
                 self.stop.append(f.readline().replace('\n', ''))
-        self.stop.append(self.punctuation + ['rt', 'via'])
+
+        for i in self.punctuation:
+            self.stop.append(i)
 
     def read_datas_to_generate_tokens(self, table):
         sql = MySqlOperator()
         result = sql.select_tweets_from_table(table)
 
         for i in result:
-            for k in i:
-                k = k.replace('\n', '')
-                self.tokens.append([term for term in self.pre_process(k) if term not in self.stop])
+            string = ''.join(map(str, i))
+            token = self.pre_process(string)
+
+            for j in token:
+                if j not in self.stop:
+                    self.tokens.append(j)
+        print(self.stop)
+
+    def deep_cleaning(self):
+        pass
 
     def count_commom_datas(self):
         count_all = Counter()
-        for i in self.tokens:
-            count_all.update(i)
+        count_all.update(self.tokens)
         return count_all.most_common(5)
 
     def calculate_sentiment(self, table):
