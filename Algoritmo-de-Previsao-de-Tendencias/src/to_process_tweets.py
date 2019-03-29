@@ -49,6 +49,9 @@ class ProcessTweets:
 
         for i in self.punctuation:
             self.stop.append(i)
+        self.stop.append('...')
+        self.stop.append('RT')
+        self.stop.append('I')
 
     def read_datas_to_generate_tokens(self, table):
         sql = MySqlOperator()
@@ -57,21 +60,22 @@ class ProcessTweets:
         for i in result:
             string = ''.join(map(str, i))
             token = self.pre_process(string)
-
-            for j in token:
-                if j not in self.stop:
-                    self.tokens.append(j)
-        print(self.stop)
+            for term in token:
+                self.tokens.append(term)
 
     def deep_cleaning(self):
         pass
 
     def count_commom_datas(self):
+        print(self.tokens)
+        terms_hash = [term for term in self.tokens if term.startswith('#')]
+        terms_only = [term for term in self.tokens if term not in self.stop and not term.startswith(('#', '@'))]
+
         count_all = Counter()
-        count_all.update(self.tokens)
+        count_all.update(terms_only)
         return count_all.most_common(5)
 
-    def calculate_sentiment(self, table):
+    """def calculate_sentiment(self, table):
         twittes_score = list()
         all_tweets = MySqlOperator().select_all_datas_from_table(table)
         sentimets_datas = [0 for i in range(0, 3)]
@@ -89,6 +93,24 @@ class ProcessTweets:
             else:
                 sentimets_datas[2] += 1
         return sentimets_datas
+"""
+    #incrementar essas listas
+    """def calculate_sentiment(self):
+        positive_vocab = [
+            'good', 'nice', 'great', 'awesome', 'outstanding',
+            'fantastic', 'terrific', ':)', ':-)', 'like', 'love',
+        ]
+        negative_vocab = [
+            'bad', 'terrible', 'crap', 'useless', 'hate', ':(', ':-(',
+        ]
+
+        p_t = {}
+        p_t_com = defaultdict(lambda : defaultdict(int))
+        pmi = defaultdict(lambda : defaultdict(int))
+
+        for term, n in 
+
+        for t1 in"""
 
     def calculate_frequency(self, table):
         all_tweets = MySqlOperator().select_all_datas_from_table(table)
