@@ -1,5 +1,6 @@
 import re
 import string
+import operator
 from collections import Counter
 from textblob import TextBlob
 from mysql_connector import MySqlOperator
@@ -7,7 +8,7 @@ from collections import defaultdict
 from nltk.corpus import wordnet
 
 class ProcessTweets:
-    def __init__(self):
+    def __init__(self, product):
         self.emoticons_str = r"""
             (?:
                 [:=;] # Eyes
@@ -30,6 +31,9 @@ class ProcessTweets:
         self.punctuation = list(string.punctuation)
         self.stop = list()
         self.tokens = list()
+        self.product = product
+        self.terms_only = list()
+        self.terms_hash = list()
         self.read_stop_words_from_file()
 
     def tokenize(self, s):
@@ -49,13 +53,13 @@ class ProcessTweets:
 
         for i in self.punctuation:
             self.stop.append(i)
-        self.stop.append('...')
+        self.stop.append('…')
         self.stop.append('RT')
         self.stop.append('I')
 
-    def read_datas_to_generate_tokens(self, table):
+    def read_datas_to_generate_tokens(self):
         sql = MySqlOperator()
-        result = sql.select_tweets_from_table(table)
+        result = sql.select_tweets_from_table(self.product)
 
         for i in result:
             string = ''.join(map(str, i))
@@ -67,12 +71,15 @@ class ProcessTweets:
         pass
 
     def count_commom_datas(self):
-        print(self.tokens)
-        terms_hash = [term for term in self.tokens if term.startswith('#')]
-        terms_only = [term for term in self.tokens if term not in self.stop and not term.startswith(('#', '@'))]
+        self.terms_hash = [term for term in self.tokens if term.startswith('#')]
+        self.terms_only = [term for term in self.tokens if term not in self.stop and not term.startswith(('#', '@'))]
+
+        for term in self.terms_only:
+            if term.lower() == self.product.lower():
+                self.terms_only.remove(term)
 
         count_all = Counter()
-        count_all.update(terms_only)
+        count_all.update(self.terms_only)
         return count_all.most_common(5)
 
     """def calculate_sentiment(self, table):
@@ -112,15 +119,21 @@ class ProcessTweets:
 
         for t1 in"""
 
-    def calculate_frequency(self, table):
-        all_tweets = MySqlOperator().select_all_datas_from_table(table)
+    def calculate_frequency(self):
         com = defaultdict(lambda: defaultdict(int))
+        com_max = list()
 
-        terms_only = [term for term in self.pre_process(all_tweets)
-                      if term not in self.stop and not term.startwith(('#', '@'))]
-
-        for i in range(len(terms_only) - 1):
-            for j in range(i + 1, len(terms_only)):
-                w1, w2 = sorted([terms_only[i], terms_only[j]])
+        # Build co-occurrence matrix
+        for i in range(len(self.terms_only) - 1):
+            for j in range(i + 1, len(self.terms_only)):
+                w1, w2 = sorted([self.terms_only[i], self.terms_only[j]])
                 if w1 != w2:
                     com[w1][w2] += 1
+
+        # For each term, look for the most common co-occurrent terms
+        for t1 in com:
+            t1_max_terms = sorted(com[t1].items(), key=operator.itemgetter(1), reverse=True)[:5]
+            for t2, t2_count in t1_max_terms:
+                com_max.append(((t1, t2), t2_count))
+        terms_max = sorted(com_max, key=operator.itemgetter(1), reverse=True)
+        print(terms_max[:5])
