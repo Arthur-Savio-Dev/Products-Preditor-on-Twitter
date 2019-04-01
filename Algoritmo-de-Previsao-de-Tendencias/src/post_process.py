@@ -6,16 +6,16 @@ from to_process_tweets import ProcessTweets
 import matplotlib.pyplot as pyplot
 
 class PostProcessTweets:
-    def __init__(self, table):
+    def __init__(self, product):
         self.all_tweets = list()
-        self.table = table
+        self.product = product
 
-    def generate_graphic(self):
-        pt = ProcessTweets()
-        self.all_tweets = pt.calculate_sentiment(self.table)
+    def sentiment_graphic(self):
+        pt = ProcessTweets(self.product)
+        self.all_tweets = pt.calculate_sentiment(self.product)
 
         labels_list = ["Bad Sentiments", "Medium Sentiments", "Good Sentiments"]
-        explode_list = [0, 0.1, 0]
+        explode_list = [0, 0, 0.1]
 
         pyplot.axis('equal')
         pyplot.pie(self.all_tweets, labels = labels_list, autopct='%1.1f%%',
@@ -23,3 +23,6 @@ class PostProcessTweets:
 
         pyplot.title('Sentiment Frequency')
         pyplot.show()
+
+    # Implementar gráfico para palavras mais comuns, localização, controle do termo de pesquisa, melhorar o gráfico do sentimentos
+    # exibir gŕafico com os melhores produtos relacionados

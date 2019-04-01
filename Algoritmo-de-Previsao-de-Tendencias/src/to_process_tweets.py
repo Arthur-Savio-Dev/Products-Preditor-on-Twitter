@@ -28,13 +28,19 @@ class ProcessTweets:
         ]
         self.tokens_re = re.compile(r'('+'|'.join(self.regex_str)+')', re.VERBOSE | re.IGNORECASE)
         self.emoticon_re = re.compile(r'^'+self.emoticons_str+'$', re.VERBOSE | re.IGNORECASE)
-        self.punctuation = list(string.punctuation)
         self.stop = list()
         self.tokens = list()
         self.product = product
         self.terms_only = list()
         self.terms_hash = list()
+        self.bad_words = list()
+        self.good_words = list()
+        self.count_bad = Counter()
+        self.count_good = Counter()
+        self.good_words = list()
+        self.bad_words = list()
         self.generate_stop_words()
+        self.read_bad_and_good_words()
 
     def tokenize(self, s):
         return self.tokens_re.findall(s)
@@ -58,24 +64,18 @@ class ProcessTweets:
             for term in token:
                 self.tokens.append(term)
 
-    def deep_cleaning(self):
-        pass
-
     def generate_clean_tokens(self):
         self.terms_hash = [term for term in self.tokens if term.startswith('#')]
         self.terms_only = [term for term in self.tokens if term not in self.stop and not term.startswith(('#', '@'))]
 
     def count_commom_datas(self):
-        self.generate_clean_tokens()
-        for term in self.terms_only:
-            if term.lower() == self.product.lower():
-                self.terms_only.remove(term)
+        for i in self.terms_only:
+            if i in self.good_words:
+                self.count_good.update(self.good_words)
+            if i in self.bad_words:
+                self.count_bad.update(self.bad_words)
 
-        count_all = Counter()
-        count_all.update(self.terms_only)
-        return count_all.most_common(5)
-
-    """def calculate_sentiment(self, table):
+    def calculate_sentiment(self, table):
         twittes_score = list()
         all_tweets = MySqlOperator().select_all_datas_from_table(table)
         sentimets_datas = [0 for i in range(0, 3)]
@@ -86,47 +86,22 @@ class ProcessTweets:
             twittes_score.append(polarity)
 
         for j in twittes_score:
-            if j <= -0.5:
+            if j < 0:
                 sentimets_datas[0] += 1
-            elif j > -0.5 and j <= 0.5:
+            elif j == 0:
                 sentimets_datas[1] += 1
             else:
                 sentimets_datas[2] += 1
         return sentimets_datas
-"""
-    #incrementar essas listas
-    """def calculate_sentiment(self):
-        positive_vocab = [
-            'good', 'nice', 'great', 'awesome', 'outstanding',
-            'fantastic', 'terrific', ':)', ':-)', 'like', 'love',
-        ]
-        negative_vocab = [
-            'bad', 'terrible', 'crap', 'useless', 'hate', ':(', ':-(',
-        ]
 
-        p_t = {}
-        p_t_com = defaultdict(lambda : defaultdict(int))
-        pmi = defaultdict(lambda : defaultdict(int))
+    def read_bad_and_good_words(self):
+        with open('datas/synonym_good_words.txt', 'r') as f:
+            self.good_words.append(f.readline().replace('\n', ''))
+            while f.readline():
+                self.good_words.append(f.readline().replace('\n', ''))
 
-        for term, n in 
+        with open('datas/synonym_bad_words.txt', 'r') as f:
+            self.bad_words.append(f.readline().replace('\n', ''))
+            while f.readline():
+                self.bad_words.append(f.readline().replace('\n', ''))
 
-        for t1 in"""
-
-    def calculate_frequency(self):
-        com = defaultdict(lambda: defaultdict(int))
-        com_max = list()
-
-        # Build co-occurrence matrix
-        for i in range(len(self.terms_only) - 1):
-            for j in range(i + 1, len(self.terms_only)):
-                w1, w2 = sorted([self.terms_only[i], self.terms_only[j]])
-                if w1 != w2:
-                    com[w1][w2] += 1
-
-        # For each term, look for the most common co-occurrent terms
-        for t1 in com:
-            t1_max_terms = sorted(com[t1].items(), key=operator.itemgetter(1), reverse=True)[:5]
-            for t2, t2_count in t1_max_terms:
-                com_max.append(((t1, t2), t2_count))
-        terms_max = sorted(com_max, key=operator.itemgetter(1), reverse=True)
-        print(terms_max[:5])

@@ -8,11 +8,11 @@ if __name__ == '__main__':
     #api = InitializeTwitterApi(i, 200)
     #api.set_access_api_keys()
 
-    process = ProcessTweets('ipad')
+    """process = ProcessTweets('ipad')
     process.read_datas_to_generate_tokens()
     process.generate_clean_tokens()
-    process.calculate_frequency()
+    process.count_commom_datas()"""
 
-    #post_process_twitter = PostProcessTweets('ipad')
-    #post_process_twitter.generate_graphic()
+    post_process_twitter = PostProcessTweets('ipad')
+    post_process_twitter.sentiment_graphic()
 
