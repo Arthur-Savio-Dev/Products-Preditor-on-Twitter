@@ -5,7 +5,7 @@ from collections import Counter
 from textblob import TextBlob
 from mysql_connector import MySqlOperator
 from collections import defaultdict
-from nltk.corpus import wordnet
+from nltk.corpus import wordnet, stopwords
 
 class ProcessTweets:
     def __init__(self, product):
@@ -34,7 +34,7 @@ class ProcessTweets:
         self.product = product
         self.terms_only = list()
         self.terms_hash = list()
-        self.read_stop_words_from_file()
+        self.generate_stop_words()
 
     def tokenize(self, s):
         return self.tokens_re.findall(s)
@@ -45,17 +45,8 @@ class ProcessTweets:
             tokens = [token if self.emoticon_re.search(token) else token.lower() for token in tokens]
         return tokens
 
-    def read_stop_words_from_file(self):
-        with open('datas/stop_words.txt', 'r') as f:
-            self.stop.append(f.readline().replace('\n', ''))
-            while f.readline():
-                self.stop.append(f.readline().replace('\n', ''))
-
-        for i in self.punctuation:
-            self.stop.append(i)
-        self.stop.append('…')
-        self.stop.append('RT')
-        self.stop.append('I')
+    def generate_stop_words(self):
+        self.stop = stopwords.words('english') + list(string.punctuation) + ['rt', 'RT', 'via', 'I', '...', '…', '’']
 
     def read_datas_to_generate_tokens(self):
         sql = MySqlOperator()
@@ -70,10 +61,12 @@ class ProcessTweets:
     def deep_cleaning(self):
         pass
 
-    def count_commom_datas(self):
+    def generate_clean_tokens(self):
         self.terms_hash = [term for term in self.tokens if term.startswith('#')]
         self.terms_only = [term for term in self.tokens if term not in self.stop and not term.startswith(('#', '@'))]
 
+    def count_commom_datas(self):
+        self.generate_clean_tokens()
         for term in self.terms_only:
             if term.lower() == self.product.lower():
                 self.terms_only.remove(term)

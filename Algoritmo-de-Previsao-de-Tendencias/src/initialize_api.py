@@ -4,13 +4,15 @@ from tweepy import Stream
 from read_twitter import MyListener
 
 class InitializeTwitterApi:
-    def __init__(self):
+    def __init__(self, product, limit):
         self.consumer_key = "ao65rICjuJmrW9iGWlMpVDDRc"
         self.consumer_secret = "ZLgdiYjz5hTtAfFsBeT9MkudbjLs3BmQF8YAU5fPNcOY1SqsGQ"
         self.access_token = "1090611131213905922-e7vY6lrIj4D3CKHb7sBJQrxpK3gjZX"
         self.access_token_secret = "iVVFbRQLCWsHsNVXqDg8c0Mde1HQR4rczXmuReUTExtKo"
         self.auth = None
         self.api = None
+        self.limit = limit
+        self.product = product
 
     def set_access_api_keys(self):
         self.auth = OAuthHandler(self.consumer_key, self.consumer_secret)
@@ -19,9 +21,7 @@ class InitializeTwitterApi:
         self.receive_informations_to_init_read_api()
 
     def receive_informations_to_init_read_api(self):
-        term_to_search = input(" - Please, type the product that you want receive statistics:  \n")
-        number_of_tweets = int(input("\n - Now you can type the number of tweets that you want analise: \n"))
-        self.init_read_api(term_to_search, number_of_tweets)
+        self.init_read_api(self.product, self.limit)
 
     def init_read_api(self, term_to_search, number_of_tweets):
         print(" - Please wait, we are working for find your results... -\n\n")
