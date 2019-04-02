@@ -35,12 +35,20 @@ class ProcessTweets:
         self.terms_hash = list()
         self.bad_words = list()
         self.good_words = list()
-        self.count_bad = Counter()
-        self.count_good = Counter()
+        self.count_bad = dict()
+        self.count_good = dict()
         self.good_words = list()
         self.bad_words = list()
+        self.all_tweets = list()
+        self.initialize_proccess()
+
+    def initialize_proccess(self):
+        self.calculate_sentiment(self.product)
         self.generate_stop_words()
+        self.read_datas_to_generate_tokens()
+        self.generate_clean_tokens()
         self.read_bad_and_good_words()
+        self.count_commom_datas()
 
     def tokenize(self, s):
         return self.tokens_re.findall(s)
@@ -71,16 +79,22 @@ class ProcessTweets:
     def count_commom_datas(self):
         for i in self.terms_only:
             if i in self.good_words:
-                self.count_good.update(self.good_words)
+                if self.count_good.get(i) is None:
+                    self.count_good[i] = 1
+                else:
+                    self.count_good[i] += 1
             if i in self.bad_words:
-                self.count_bad.update(self.bad_words)
+                if self.count_bad.get(i) is None:
+                    self.count_bad[i] = 1
+                else:
+                    self.count_bad[i] += 1
 
-    def calculate_sentiment(self, table):
+    def calculate_sentiment(self, product):
         twittes_score = list()
-        all_tweets = MySqlOperator().select_all_datas_from_table(table)
+        self.all_tweets = MySqlOperator().select_all_datas_from_table(product)
         sentimets_datas = [0 for i in range(0, 3)]
 
-        for i in all_tweets:
+        for i in self.all_tweets:
             analysis = TextBlob(str(i))
             polarity = analysis.sentiment.polarity
             twittes_score.append(polarity)
@@ -104,4 +118,7 @@ class ProcessTweets:
             self.bad_words.append(f.readline().replace('\n', ''))
             while f.readline():
                 self.bad_words.append(f.readline().replace('\n', ''))
+
+        self.good_words = set(self.good_words)
+        self.bad_words = set(self.bad_words)
 
