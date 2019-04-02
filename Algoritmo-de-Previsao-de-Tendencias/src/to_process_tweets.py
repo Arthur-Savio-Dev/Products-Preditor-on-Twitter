@@ -63,8 +63,8 @@ class ProcessTweets:
         self.stop = stopwords.words('english') + list(string.punctuation) + ['rt', 'RT', 'via', 'I', '...', '…', '’']
 
     def read_datas_to_generate_tokens(self):
-        sql = MySqlOperator()
-        result = sql.select_tweets_from_table(self.product)
+        sql = MySqlOperator(self.product)
+        result = sql.select_tweets_from_table()
 
         for i in result:
             string = ''.join(map(str, i))
@@ -91,7 +91,7 @@ class ProcessTweets:
 
     def calculate_sentiment(self, product):
         twittes_score = list()
-        self.all_tweets = MySqlOperator().select_all_datas_from_table(product)
+        self.all_tweets = MySqlOperator(self.product).select_all_datas_from_table()
         sentimets_datas = [0 for i in range(0, 3)]
 
         for i in self.all_tweets:

@@ -8,8 +8,8 @@ class MyListener(StreamListener):
         self.counter = 0
         self.limit = limit
         self.term_to_search = term_to_search
-        self.mysql_operator = MySqlOperator()
-        self.mysql_operator.check_existing_table(term_to_search)
+        self.mysql_operator = MySqlOperator(term_to_search)
+        self.mysql_operator.check_existing_table()
 
     def on_data(self, data):
         try:
@@ -19,7 +19,7 @@ class MyListener(StreamListener):
             datas['text'] = all_data["text"]
             datas['location'] = all_data["user"]["location"]
 
-            self.mysql_operator.insert_table(self.term_to_search, datas['user'], datas['text'], datas['location'])
+            self.mysql_operator.insert_table(datas['user'], datas['text'], datas['location'])
             self.counter += 1
 
             print(self.counter)

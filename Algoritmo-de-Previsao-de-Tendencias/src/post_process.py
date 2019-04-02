@@ -37,8 +37,3 @@ class PostProcessTweets:
 
         plt.savefig('img/bad.png')
         plt.clf()
-
-x = PostProcessTweets('ipad')
-x.sentiment_graphic()
-x.good_words_graphic()
-x.bad_words_graphic() 

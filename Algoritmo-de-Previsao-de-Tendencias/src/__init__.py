@@ -4,5 +4,5 @@ from to_process_tweets import ProcessTweets
 from read_twitter import MyListener
 
 if __name__ == '__main__':
-    api = InitializeTwitterApi('Avengers', 1000)
+    api = InitializeTwitterApi('Donald Trump', 1000)
     api.set_access_api_keys()
