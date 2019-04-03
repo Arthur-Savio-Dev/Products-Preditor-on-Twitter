@@ -1,1 +1,1 @@
-# Products-Preditor-on-Twitter
+# Trend Forecasting System on Twitter
