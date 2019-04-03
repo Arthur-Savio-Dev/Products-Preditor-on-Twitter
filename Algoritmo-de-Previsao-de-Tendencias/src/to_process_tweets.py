@@ -1,11 +1,9 @@
 import re
 import string
-import operator
-from collections import Counter
 from textblob import TextBlob
 from mysql_connector import MySqlOperator
-from collections import defaultdict
-from nltk.corpus import wordnet, stopwords
+from nltk.corpus import stopwords
+from post_process import PostProcessTweets
 
 class ProcessTweets:
     def __init__(self, product):
@@ -40,15 +38,19 @@ class ProcessTweets:
         self.good_words = list()
         self.bad_words = list()
         self.all_tweets = list()
-        self.initialize_proccess()
+        self.sentiment_datas = [0 for i in range(0, 3)]
+        self.initialize_process()
 
-    def initialize_proccess(self):
-        self.calculate_sentiment(self.product)
+    def initialize_process(self):
+        self.calculate_sentiment()
         self.generate_stop_words()
         self.read_datas_to_generate_tokens()
         self.generate_clean_tokens()
         self.read_bad_and_good_words()
         self.count_commom_datas()
+
+        ppt = PostProcessTweets(self.count_good, self.count_bad, self.sentiment_datas)
+        ppt.generate_all_graphics()
 
     def tokenize(self, s):
         return self.tokens_re.findall(s)
@@ -77,22 +79,24 @@ class ProcessTweets:
         self.terms_only = [term for term in self.tokens if term not in self.stop and not term.startswith(('#', '@'))]
 
     def count_commom_datas(self):
+        gw = set(self.good_words)
+        bw = set(self.bad_words)
+
         for i in self.terms_only:
-            if i in self.good_words:
+            if i in gw:
                 if self.count_good.get(i) is None:
                     self.count_good[i] = 1
                 else:
                     self.count_good[i] += 1
-            if i in self.bad_words:
+            if i in bw:
                 if self.count_bad.get(i) is None:
                     self.count_bad[i] = 1
                 else:
                     self.count_bad[i] += 1
 
-    def calculate_sentiment(self, product):
+    def calculate_sentiment(self):
         twittes_score = list()
         self.all_tweets = MySqlOperator(self.product).select_all_datas_from_table()
-        sentimets_datas = [0 for i in range(0, 3)]
 
         for i in self.all_tweets:
             analysis = TextBlob(str(i))
@@ -101,23 +105,19 @@ class ProcessTweets:
 
         for j in twittes_score:
             if j < 0:
-                sentimets_datas[0] += 1
+                self.sentiment_datas[0] += 1
             elif j == 0:
-                sentimets_datas[1] += 1
+                self.sentiment_datas[1] += 1
             else:
-                sentimets_datas[2] += 1
-        return sentimets_datas
+                self.sentiment_datas[2] += 1
 
     def read_bad_and_good_words(self):
-        with open('datas/synonym_good_words.txt', 'r') as f:
+        with open('../datas/synonym_good_words.txt', 'r') as f:
             self.good_words.append(f.readline().replace('\n', ''))
             while f.readline():
                 self.good_words.append(f.readline().replace('\n', ''))
 
-        with open('datas/synonym_bad_words.txt', 'r') as f:
+        with open('../datas/synonym_bad_words.txt', 'r') as f:
             self.bad_words.append(f.readline().replace('\n', ''))
             while f.readline():
                 self.bad_words.append(f.readline().replace('\n', ''))
-
-        self.good_words = set(self.good_words)
-        self.bad_words = set(self.bad_words)

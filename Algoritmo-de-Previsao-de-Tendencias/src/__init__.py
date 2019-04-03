@@ -1,8 +1,12 @@
 from initialize_api import InitializeTwitterApi
-from post_process import PostProcessTweets
 from to_process_tweets import ProcessTweets
-from read_twitter import MyListener
+
+def main(product, limit):
+    api = InitializeTwitterApi(product, limit)
+    api.set_access_api_keys()
+    pt = ProcessTweets(product)
+    pt.initialize_process()
 
 if __name__ == '__main__':
-    api = InitializeTwitterApi('Donald Trump', 1000)
-    api.set_access_api_keys()
+
+    main('Avenger', 100)
